@@ -24,7 +24,7 @@ class EnvironmentScanner:
         confidence=0.72,
         min_distance=55,
         scan_region=(0, 0, 1366, 670),
-        encounter_timeout=8.0,
+        encounter_timeout=25.0,
     ):
         self.templates = templates or {
             "tree": [
@@ -144,10 +144,17 @@ class EnvironmentScanner:
                 # existing fight implementation. Once it appears, hand off
                 # to the normal fight loop.
                 items = HumanMouse.locate_on_screen(
-                    "photos/fight/common/items.png", 0.8
+                    "photos/fight/common/items.png", 0.72
                 )
                 if items:
                     print("[SCAN] Battle controls detected via Items.")
+                    return True
+
+                capture = HumanMouse.locate_on_screen(
+                    "photos/fight/common/capture.png", 0.72
+                )
+                if capture:
+                    print("[SCAN] Battle controls detected via Capture.")
                     return True
 
             except Exception as exc:
