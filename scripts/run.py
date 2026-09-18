@@ -2,6 +2,7 @@ from fight import MiscritsBot
 from notifier import Notifier
 from human_mouse import HumanMouse
 from fight_info import FightInfo
+from environment_scanner import EnvironmentScanner
 from logger import setup_logger
 
 logger = setup_logger()
@@ -16,7 +17,10 @@ bot = MiscritsBot(search_crit="woolly",
                   move_page=1,
                   plat_capture_attempts=0,
                   notifier=notifier,
-                  logger=logger)
+                  logger=logger,
+                  environment_scan=True,
+                  s_plus_capture_hp=25,
+                  s_plus_capture_attempts=3)
 
 logger.info("Bot started.")
 bot.main_loop()
