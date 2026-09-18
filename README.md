@@ -39,6 +39,8 @@ miscritsbotv2/
 │ ├── ba/      # battle arena templates
 │ ├── breed/   # breeding templates
 │ └── rename/  # rename/stat detection templates
+├── templates/
+│ └── environment/ # tree/grass encounter-object templates
 └── scripts/
   ├── run.py            # main fight/training bot runner
   ├── fight.py          # core bot logic + capture rules
@@ -101,6 +103,19 @@ bot = MiscritsBot(
 ```
 The search_crit must match a folder in:
 `photos/fight/<search_crit>/` Example: `photos/fight/geneseed/`
+
+### Environment scanning mode
+The current runner enables environment scanning instead of searching for one specific Miscrit. It scans the visible map for the supplied tree/grass templates, interacts with an unchecked object, waits for an encounter, and then hands the encounter to the existing fight/training logic.
+
+Environment templates are stored in `templates/environment/`:
+- `tree_01.jpg`
+- `tree_02.jpg`
+- `grass_01.jpg`
+- `grass_02.jpg`
+
+The scan area defaults to the 1366x670 map viewport shown by the supplied game screenshot, leaving the bottom social controls outside the scan. If your game window uses a different resolution, update `scan_region` in `scripts/environment_scanner.py`.
+
+S+ encounters use an HP-first capture rule: the bot attacks while HP is above the configured threshold, then attempts capture. The runner currently uses `s_plus_capture_hp=25` and up to 3 capture attempts.
 
 ### Run
 From the project root:
