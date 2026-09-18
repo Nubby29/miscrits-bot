@@ -138,15 +138,24 @@ class EnvironmentScanner:
                     HumanMouse.click()
                     print("[SCAN] Search-for-Miscrit prompt clicked.")
                     time.sleep(1.2)
+                    continue
+
+                # A visible WISP/SWIPE move means the actual battle controls
+                # are ready. Do not hand off to _fight_loop() merely because
+                # the Items or Capture button is visible.
+                turn = HumanMouse.locate_on_screen(
+                    "photos/fight/common/my_turn.png", 0.8
+                )
+                if turn:
+                    print("[SCAN] Battle turn controls detected.")
                     return True
 
-                for path in (
-                    "photos/fight/common/items.png",
-                    "photos/fight/common/capture.png",
-                ):
-                    if HumanMouse.locate_on_screen(path, 0.78):
-                        print(f"[SCAN] Battle UI detected via {path}.")
-                        return True
+                swipe = HumanMouse.locate_on_screen(
+                    "photos/fight/common/swipe.png", 0.8
+                )
+                if swipe:
+                    print("[SCAN] Battle move controls detected via SWIPE.")
+                    return True
 
             except Exception as exc:
                 print(f"[SCAN] Encounter detection error: {exc}")
