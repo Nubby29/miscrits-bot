@@ -174,9 +174,10 @@ class MiscritsBot:
         self.s_plus_capture_hp = s_plus_capture_hp
         self.s_plus_capture_attempts = s_plus_capture_attempts
         if self.environment_scan:
-            # Items is the stable battle-control anchor already used by the
-            # original bot. The attack routine uses it as the move anchor.
-            self.my_turn = "photos/fight/common/items.png"
+            # Items can briefly appear during the encounter transition and is
+            # not a reliable turn anchor. Capture is part of the actual battle
+            # UI and is also required by FightInfo for battle OCR.
+            self.my_turn = "photos/fight/common/capture.png"
 
     def look_for_target_until_found(self, target_path: str, confidence: float = 0.8):
         """Continuously searches for a target on screen until found or timeout triggers."""
@@ -252,14 +253,18 @@ class MiscritsBot:
                 print(f"[CHECK] {fight_complete_path} found → fight complete.")
                 return "fight_complete"
 
-            # Environment mode uses the same confidence as the encounter
-            # scanner and can also use Capture as a fallback turn anchor.
+            # Environment mode uses the actual battle UI as the turn anchor.
+            # Items may be visible briefly while the encounter is loading, so
+            # it must not be used to enter the fight loop by itself.
             if self.environment_scan:
                 capture = HumanMouse.locate_on_screen(
                     "photos/fight/common/capture.png", confidence
                 )
-                if capture:
-                    print("[CHECK] Capture control found → my turn.")
+                book = HumanMouse.locate_on_screen(
+                    "photos/fight/common/book.png", confidence
+                )
+                if capture and book:
+                    print("[CHECK] Battle UI (Capture + Book) found → my turn.")
                     return "my_turn"
 
             print("[CHECK] No fight indicators found...")
