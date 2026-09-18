@@ -23,7 +23,12 @@ class FightInfo:
         Locate template inside a given PIL image.
         Returns absolute screen coordinates.
         """
-        box = pyautogui.locate(template_path, haystack, confidence=confidence)
+        try:
+            box = pyautogui.locate(template_path, haystack, confidence=confidence)
+        except Exception:
+            # A missing/non-matching template must not abort the fight loop.
+            return None
+
         if box:
             loc = pyautogui.center(box)
             return (loc[0] + region_offset[0], loc[1] + region_offset[1])
