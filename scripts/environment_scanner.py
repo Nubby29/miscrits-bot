@@ -140,21 +140,14 @@ class EnvironmentScanner:
                     time.sleep(1.2)
                     continue
 
-                # A visible WISP/SWIPE move means the actual battle controls
-                # are ready. Do not hand off to _fight_loop() merely because
-                # the Items or Capture button is visible.
-                turn = HumanMouse.locate_on_screen(
-                    "photos/fight/common/my_turn.png", 0.8
+                # Items is the stable battle-control anchor used by the
+                # existing fight implementation. Once it appears, hand off
+                # to the normal fight loop.
+                items = HumanMouse.locate_on_screen(
+                    "photos/fight/common/items.png", 0.8
                 )
-                if turn:
-                    print("[SCAN] Battle turn controls detected.")
-                    return True
-
-                swipe = HumanMouse.locate_on_screen(
-                    "photos/fight/common/swipe.png", 0.8
-                )
-                if swipe:
-                    print("[SCAN] Battle move controls detected via SWIPE.")
+                if items:
+                    print("[SCAN] Battle controls detected via Items.")
                     return True
 
             except Exception as exc:
