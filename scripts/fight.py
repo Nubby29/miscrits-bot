@@ -174,7 +174,9 @@ class MiscritsBot:
         self.s_plus_capture_hp = s_plus_capture_hp
         self.s_plus_capture_attempts = s_plus_capture_attempts
         if self.environment_scan:
-            self.my_turn = "photos/fight/woolly/my_turn.png"
+            # Environment mode uses the generic WISP/SWIPE battle controls,
+            # not a target-specific Miscrit turn template.
+            self.my_turn = "photos/fight/common/my_turn.png"
 
     def look_for_target_until_found(self, target_path: str, confidence: float = 0.8):
         """Continuously searches for a target on screen until found or timeout triggers."""
@@ -527,14 +529,17 @@ class MiscritsBot:
             self.use_magical_heal() #TODO: handle case where no magical heals
             time.sleep(1.5)
         else:
-            attack_image = f"photos/fight/common/items.png"
-            attack_move = self.look_for_target_until_found(attack_image)
+            attack_move = HumanMouse.locate_on_screen(
+                "photos/fight/common/wisp.png", confidence=0.8
+            )
+            if not attack_move:
+                attack_move = self.look_for_target_until_found(
+                    "photos/fight/common/swipe.png"
+                )
 
             print("[ACTION] Attacking instead of capturing.")
-
-            HumanMouse.move_to(attack_move, -50, 50)
+            HumanMouse.move_to(attack_move, 0, 0)
             HumanMouse.click()
-            HumanMouse.move_to(attack_move, 0, -250)
             time.sleep(2)
 
     def _finalize_fight(self, captured: bool):
