@@ -20,15 +20,21 @@ class HumanMouse:
 
     @staticmethod
     def locate_on_screen(template_path, confidence=0.8, region=None):
-        return pyautogui.locateCenterOnScreen(
-            template_path, confidence=confidence, region=region
-        )
+        try:
+            return pyautogui.locateCenterOnScreen(
+                template_path, confidence=confidence, region=region
+            )
+        except Exception:
+            return None
 
     @staticmethod
     def locate_all_on_screen(template_path, min_distance=60, confidence=0.8, region=None):
-        matches = list(pyautogui.locateAllOnScreen(
-            template_path, confidence=confidence, region=region
-        ))
+        try:
+            matches = list(pyautogui.locateAllOnScreen(
+                template_path, confidence=confidence, region=region
+            ))
+        except Exception:
+            return []
         centers = [pyautogui.center(match) for match in matches]
         unique_centers = []
 
