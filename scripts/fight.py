@@ -4,6 +4,7 @@ import random
 from human_mouse import HumanMouse
 from notifier import Notifier
 from fight_info import FightInfo
+from environment_scanner import EnvironmentScanner
 
 offset_coords = {
     "woolly": (-460, 380),
@@ -143,7 +144,9 @@ name_searches = {
 class MiscritsBot:
     def __init__(self, search_crit, trainer_crit, heal=False,
                  plat_training=False, capture_tiers=["B+", "A", "A+", "S+", "S"], 
-                 move_page=1, plat_capture_attempts=0, notifier=None, logger=None):
+                 move_page=1, plat_capture_attempts=0, notifier=None, logger=None,
+                 environment_scan=False, environment_scanner=None,
+                 s_plus_capture_hp=25, s_plus_capture_attempts=3):
         self.notifier = notifier
         self.logger = logger
         self.trainer_crit = trainer_crit
@@ -166,6 +169,12 @@ class MiscritsBot:
         self.capture_tiers = capture_tiers
         self.heal = heal
         self.move_page = move_page
+        self.environment_scan = environment_scan
+        self.environment_scanner = environment_scanner or EnvironmentScanner()
+        self.s_plus_capture_hp = s_plus_capture_hp
+        self.s_plus_capture_attempts = s_plus_capture_attempts
+        if self.environment_scan:
+            self.my_turn = "photos/fight/woolly/my_turn.png"
 
     def look_for_target_until_found(self, target_path: str, confidence: float = 0.8):
         """Continuously searches for a target on screen until found or timeout triggers."""
@@ -271,6 +280,20 @@ class MiscritsBot:
         print("[TRAIN] Not ready to train.")
         return False
 
+    def fight_on_environment(self):
+        """Scan map objects, trigger an encounter, then run the normal fight loop."""
+        target = self.environment_scanner.next_target()
+        if not target:
+            print("[SCAN] No environment targets visible; rescanning.")
+            time.sleep(0.5)
+            return False, False
+
+        if not self.environment_scanner.interact(target):
+            return False, False
+
+        self.tries += 1
+        return self._fight_loop()
+
     def fight_on_location(self, image_path):
         """Initiates a fight at the given location on screen."""
 
@@ -363,7 +386,7 @@ class MiscritsBot:
 
                 if self._should_attempt_capture(
                     crit_tier, capture_chance,
-                    capture_attempts, found
+                    capture_attempts, found, crit_hp
                 ):
                     captured, capture_attempts = self._attempt_capture(
                         crit_tier, found, capture_attempts
@@ -399,9 +422,23 @@ class MiscritsBot:
         )
 
     def _should_attempt_capture(self, crit_tier, capture_chance,
-                                capture_attempts, found) -> bool:
-        """Decides whether to attempt capturing the crit."""
-        capture_chance = int(capture_chance)
+                                capture_attempts, found, crit_hp) -> bool:
+        """Decides whether to capture, with an HP-first S+ rule."""
+        try:
+            capture_chance = int(capture_chance)
+        except (TypeError, ValueError):
+            capture_chance = 0
+
+        try:
+            crit_hp = int(crit_hp)
+        except (TypeError, ValueError):
+            crit_hp = 0
+
+        if crit_tier == "S+":
+            return (
+                crit_hp <= self.s_plus_capture_hp
+                and capture_attempts < self.s_plus_capture_attempts
+            )
 
         return (
             (crit_tier in self.capture_tiers
@@ -690,7 +727,10 @@ class MiscritsBot:
 
     def main_loop(self):
         while True:
-            is_ready_to_train, captured = self.fight_on_location(self.crit_ref)
+            if self.environment_scan:
+                is_ready_to_train, captured = self.fight_on_environment()
+            else:
+                is_ready_to_train, captured = self.fight_on_location(self.crit_ref)
             time.sleep(1)  # TODO: Remove? Not needed after update? Wait between click continue and see if captured congrats.
 
             print("[MAIN] Fight finished (line 300)")
