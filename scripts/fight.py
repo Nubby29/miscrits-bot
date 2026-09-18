@@ -234,23 +234,36 @@ class MiscritsBot:
         return False
 
     def look_for_fight_over_or_not(
-        self, my_turn_path: str, fight_complete_path: str, confidence: float = 0.8
+        self, my_turn_path: str, fight_complete_path: str, confidence: float = 0.72
     ) -> str:
-        """Checks if it's the player's turn or the fight is complete."""
+        """Wait for a player-turn anchor or the fight-complete UI."""
+        poll_interval = 0.15
+
         while True:
             my_turn = HumanMouse.locate_on_screen(my_turn_path, confidence)
-            fight_complete = HumanMouse.locate_on_screen(fight_complete_path, confidence)
-
             if my_turn:
                 print(f"[CHECK] {my_turn_path} found → my turn.")
                 return "my_turn"
 
+            fight_complete = HumanMouse.locate_on_screen(
+                fight_complete_path, confidence
+            )
             if fight_complete:
                 print(f"[CHECK] {fight_complete_path} found → fight complete.")
                 return "fight_complete"
 
+            # Environment mode uses the same confidence as the encounter
+            # scanner and can also use Capture as a fallback turn anchor.
+            if self.environment_scan:
+                capture = HumanMouse.locate_on_screen(
+                    "photos/fight/common/capture.png", confidence
+                )
+                if capture:
+                    print("[CHECK] Capture control found → my turn.")
+                    return "my_turn"
+
             print("[CHECK] No fight indicators found...")
-            # time.sleep(0.1)
+            time.sleep(poll_interval)
 
     def look_for_fight_or_potion(
         self, fight_path: str, potion_path: str, confidence: float = 0.8
