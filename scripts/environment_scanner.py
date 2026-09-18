@@ -140,22 +140,24 @@ class EnvironmentScanner:
                     time.sleep(1.2)
                     continue
 
-                # Items is the stable battle-control anchor used by the
-                # existing fight implementation. Once it appears, hand off
-                # to the normal fight loop.
+                # Items can appear during the encounter transition. Require
+                # the actual battle UI (Capture + Book) before handing off to
+                # the fight loop, because FightInfo also uses these controls.
+                capture = HumanMouse.locate_on_screen(
+                    "photos/fight/common/capture.png", 0.72
+                )
+                book = HumanMouse.locate_on_screen(
+                    "photos/fight/common/book.png", 0.72
+                )
+                if capture and book:
+                    print("[SCAN] Battle UI detected via Capture + Book.")
+                    return True
+
                 items = HumanMouse.locate_on_screen(
                     "photos/fight/common/items.png", 0.72
                 )
                 if items:
-                    print("[SCAN] Battle controls detected via Items.")
-                    return True
-
-                capture = HumanMouse.locate_on_screen(
-                    "photos/fight/common/capture.png", 0.72
-                )
-                if capture:
-                    print("[SCAN] Battle controls detected via Capture.")
-                    return True
+                    print("[SCAN] Items detected; waiting for full battle UI...")
 
             except Exception as exc:
                 print(f"[SCAN] Encounter detection error: {exc}")
