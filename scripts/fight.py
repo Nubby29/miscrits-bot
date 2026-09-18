@@ -730,12 +730,18 @@ class MiscritsBot:
     def main_loop(self):
         while True:
             if self.environment_scan:
-                is_ready_to_train, captured = self.fight_on_environment()
+                result = self.fight_on_environment()
+                # No encounter happened; return directly to scanning instead
+                # of running post-fight/training logic on a map screen.
+                if result == (False, False):
+                    time.sleep(0.2)
+                    continue
+                is_ready_to_train, captured = result
             else:
                 is_ready_to_train, captured = self.fight_on_location(self.crit_ref)
-            time.sleep(1)  # TODO: Remove? Not needed after update? Wait between click continue and see if captured congrats.
+            time.sleep(1)
 
-            print("[MAIN] Fight finished (line 300)")
+            print("[MAIN] Fight finished")
 
             # --- Quest success handling ---
             if HumanMouse.locate_on_screen("photos/fight/common/quest_success.png"):
