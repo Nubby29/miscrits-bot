@@ -1,8 +1,9 @@
+import math
 import pyautogui
 import time
-import math
 
 pyautogui.FAILSAFE = False
+
 
 class HumanMouse:
     @staticmethod
@@ -15,37 +16,31 @@ class HumanMouse:
         pyautogui.mouseDown()
         time.sleep(0.01)
         pyautogui.mouseUp()
-        time.sleep(0.05) # TODO: OPTIMIZE, 0.3 seems too much.
+        time.sleep(0.05)
 
     @staticmethod
-    def locate_on_screen(template_path, confidence=0.8):
-        location = pyautogui.locateCenterOnScreen(template_path, confidence=confidence)
-        return location
-    
+    def locate_on_screen(template_path, confidence=0.8, region=None):
+        return pyautogui.locateCenterOnScreen(
+            template_path, confidence=confidence, region=region
+        )
+
     @staticmethod
-    def locate_all_on_screen(template_path, min_distance=60, confidence=0.8):
-        # Find all raw matches
-        matches = list(pyautogui.locateAllOnScreen(template_path, confidence=confidence))
+    def locate_all_on_screen(template_path, min_distance=60, confidence=0.8, region=None):
+        matches = list(pyautogui.locateAllOnScreen(
+            template_path, confidence=confidence, region=region
+        ))
         centers = [pyautogui.center(match) for match in matches]
-        print("centers:", centers)
-        # Get centers and filter
         unique_centers = []
 
-        for match in matches:
-            center = pyautogui.center(match)
-            
-            # Check distance to all previously stored centers
-            if all(math.dist(center, existing) > min_distance for existing in unique_centers):
+        for center in centers:
+            if all(math.dist(center, existing) > min_distance
+                   for existing in unique_centers):
                 unique_centers.append(center)
 
-        print("!! unique_centers:", unique_centers)
         return unique_centers
-    
+
     @staticmethod
     def smooth_drag(start_pos, offset_x, offset_y):
-        """
-        Clicks and drags from start_pos by the given offset using tweening for smooth motion.
-        """
         x_start, y_start = start_pos
         x_end = x_start + offset_x
         y_end = y_start + offset_y
@@ -53,23 +48,16 @@ class HumanMouse:
         pyautogui.moveTo(x_start, y_start, duration=0.01, tween=pyautogui.easeInOutQuad)
         pyautogui.mouseDown()
         time.sleep(0.01)
-
         pyautogui.moveTo(x_end, y_end, duration=0.01, tween=pyautogui.easeInOutQuad)
-
         pyautogui.mouseUp()
 
     @staticmethod
     def smooth_drag_to(start_pos, end_pos):
-        """
-        Clicks and drags from start_pos by the given offset using tweening for smooth motion.
-        """
         x_start, y_start = start_pos
         x_end, y_end = end_pos
 
         pyautogui.moveTo(x_start, y_start, duration=0.01, tween=pyautogui.easeInOutQuad)
         pyautogui.mouseDown()
         time.sleep(0.01)
-
         pyautogui.moveTo(x_end, y_end, duration=0.01, tween=pyautogui.easeInOutQuad)
-
         pyautogui.mouseUp()
