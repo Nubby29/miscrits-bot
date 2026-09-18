@@ -70,8 +70,15 @@ class FightInfo:
         if not loc:
             return ''.join(critter_name.split()), capture_chance, crit_hp, crit_tier 
 
-        fight_region = (loc[0] - 270, loc[1] - 40, 700, 170)
-        # fight_region = (500, 300, 900, 400)  # adjust to your fight UI box
+        # PyAutoGUI may return Point-like numeric values. Force every
+        # screenshot-region component to a real int because pyscreeze requires
+        # (left, top, width, height) to contain only integers.
+        fight_region = (
+            int(loc[0] - 270),
+            int(loc[1] - 40),
+            700,
+            170,
+        )
         screenshot = self._screenshot_region(fight_region)
 
         # TODO: This loc is not really needed can use book location for offsets.
