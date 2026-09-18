@@ -2,7 +2,6 @@ from fight import MiscritsBot
 from notifier import Notifier
 from human_mouse import HumanMouse
 from fight_info import FightInfo
-from environment_scanner import EnvironmentScanner
 from logger import setup_logger
 
 logger = setup_logger()
